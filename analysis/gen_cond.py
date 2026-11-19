@@ -252,8 +252,13 @@ for dn in DSN:
 L += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
 open(f"{a.out}/tables/tab_ci.tex", "w").write("\n".join(L))
 M("ciAllExclude", "every" if allexcl else "not every")
-n_ = len(allpairs)
-M("signP", f"{2 * 0.5 ** n_:.0e}".replace("e-", r"\times10^{-") + "}")
+n_ = len({m for _, m in allpairs})    # models as the unit: a model counts if Sigma beats Euclidean in all its label sets
+mods_ = sorted({m for _, m in allpairs})
+nwin_ = sum(all(permodel(dn, "dom", "sigma_orth")[m] < permodel(dn, "dom", "euclid_orth")[m] for dn, mm_ in allpairs if mm_ == m) for m in mods_)
+M("nModelsSigWin", nwin_, "{:d}"); M("nModelsSign", n_, "{:d}")
+from math import comb
+pv_ = min(1.0, 2 * sum(comb(n_, k) for k in range(nwin_, n_ + 1)) / 2 ** n_)
+M("signP", f"{pv_:.0e}".replace("e-0", "e-").replace("e-", r"\times10^{-") + "}")
 sd_ = [x for k, v in D.items() if k.startswith(("bios|", "presence|", "stereo|", "factorial|")) for dn_, kd in (v.get("analysis") or {}).items()
        for x in [kd.get("dom", {}).get("original", {}).get(f"median_r_cond_{p}", {}).get("std") for p in ("G-P", "G-R", "R-P")] if x is not None]
 M("seedSD", float(np.nanmean(sd_)) if sd_ else float("nan"))
