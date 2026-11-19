@@ -1,0 +1,6 @@
+torch>=2.2
+transformers>=4.48
+scikit-learn>=1.3
+numpy>=1.24
+concept-erasure>=0.2
+matplotlib>=3.7
